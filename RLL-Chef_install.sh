@@ -25,22 +25,25 @@ create_chef_config_file(){
   if [[ -z $CHEFNODENAME ]]; then
     CHEFNODENAME=`hostname -f`
   fi
-  echo "log_level              "$LOGLEVEL"
-log_location             \""$LOGLOCATION"\"
-chef_server_url          \""$CHEFSERVER"\"
-validation_client_name    \""$CHEFVALIDATIONNAME"\"
-validation_key            \"/etc/chef/validation_key.pem\"
-node_name                 \""$CHEFNODENAME"\""  > /etc/chef/client.rb
+  cat >/etc/chef/client.rb <<EOF
+log_level              $LOGLEVEL
+log_location             "$LOGLOCATION"
+chef_server_url          "$CHEFSERVER"
+validation_client_name   "$CHEFVALIDATIONNAME"
+validation_key            /etc/chef/validation_key.pem
+EOF
   chmod 0644 /etc/chef/client.rb
-  echo "{
-\"name\": \""$CHEFNODENAME"\",
-\"normal\": {
-\"company\": \""$CHEFCOMPANYNAME"\",
-\"tags\": [ ]   
+  cat > /etc/chef/runlist.json <<EOF
+{
+"name": "$CHEFNODENAME",
+"normal": {
+"company": "$CHEFCOMPANYNAME",
+"tags": [ ]   
 },  
-\"chef_environment\": \""$CHEFENVIRONMENT"\",
-\"run_list\": [ ROLESTOBEFILLED ]
-}" > /etc/chef/runlist.json
+"chef_environment": "$CHEFENVIRONMENT",
+"run_list": [ ROLESTOBEFILLED ]
+}" 
+EOF
   chmod 0440 /etc/chef/runlist.json
   echo $CHEFVALIDATIONKEY > /etc/chef/validation_key.pem
   chmod 0600 /etc/chef/validation_key.pem
