@@ -52,7 +52,7 @@ EOF
 },  
 "chef_environment": "$CHEFENVIRONMENT",
 "run_list": [ ROLESTOBEFILLED ]
-}" 
+} 
 EOF
   chmod 0440 /etc/chef/runlist.json
   echo $CHEFVALIDATIONKEY > /etc/chef/validation_key.pem
