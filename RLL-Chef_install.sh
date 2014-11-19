@@ -1,8 +1,18 @@
 #!/bin/bash
 
 if [[ ! -f /usr/bin/curl ]]; then
-  echo "Error: Please install curl"
-  exit 1
+  case $RS_DISTRO in
+  (ubuntu|debian)
+    apt-get install curl
+  ;;
+  (centos|redhatenterpriseserver)
+    yum install curl
+  ;;
+  (*)
+    echo "unsupported distribution '$RS_DISTRO'!"
+    exit 1
+  ;;
+  esac 
 fi
 
 install_chef(){
