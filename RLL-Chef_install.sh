@@ -3,10 +3,10 @@
 if [[ ! -f /usr/bin/curl ]]; then
   case $RS_DISTRO in
   (ubuntu|debian)
-    apt-get install curl
+    apt-get install --yes curl
   ;;
   (centos|redhatenterpriseserver)
-    yum install curl
+    yum install -y curl
   ;;
   (*)
     echo "unsupported distribution '$RS_DISTRO'!"
