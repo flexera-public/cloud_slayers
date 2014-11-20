@@ -60,10 +60,9 @@ EOF
 }
 
 role_list_creation(){
-  for x in `echo $CHEFROLES | tr , '\n'`
+  for x in `echo $CHEFROLES |tr -d " "| tr , '\n'`
   do
-    ROLE=" \\\"role[ $x ]\\\","
-    ROLES=$ROLES$ROLE
+    ROLES+=" \\\"role[ $x ]\\\","
   done
   CHEFROLESOUTPUT=${ROLES%,}
   COMMAND="sed -i 's/ROLESTOBEFILLED/${CHEFROLESOUTPUT}/g' /etc/chef/runlist.json"
