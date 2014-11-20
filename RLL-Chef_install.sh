@@ -57,9 +57,6 @@ EOF
   chmod 0440 /etc/chef/runlist.json
   echo $CHEFVALIDATIONKEY > /etc/chef/validation_key.pem
   chmod 0600 /etc/chef/validation_key.pem
-}
-
-role_list_creation(){
   for x in `echo $CHEFROLES |tr -d " "| tr , '\n'`
   do
     ROLES+=" \\\"role[ $x ]\\\","
@@ -71,7 +68,7 @@ role_list_creation(){
 
 install_chef
 
-create_chef_config_file && role_list_creation
+create_chef_config_file 
 
 if  [ $? -ne 0 ]; then
   echo "Chef failed to be configured"
