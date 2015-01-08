@@ -63,13 +63,13 @@ if [[ $DAEMONIZE == 0 || $DAEMONIZE == "false" ]]; then
   unset DAEMONIZE
 fi
 
-if [ -e "$DAEMONIZE" ] && [ -e "$RUNINTERVAL" ]; then
+if [ -n "$DAEMONIZE" ] && [ -n "$RUNINTERVAL" ]; then
   ARGS="$ARGS --runinterval $RUNINTERVAL"
 elif [ -z "$DAEMONIZE" ]; then
   ARGS="$ARGS --onetime --no-daemonize"
 fi
 
-if [ -e "$WAITFORCERT" ]; then
+if [ -n "$WAITFORCERT" ]; then
   ARGS="$ARGS --waitforcert $WAITFORCERT"
 fi
 
