@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 
-ARGS="--server $PUPPET_SERVER"
+set -ex
+
+ARGS="--server ${PUPPET_SERVER}"
 
 if [ ! -e /usr/bin/puppet ]; then
   echo "/usr/bin/puppet not found. Installing now."
   if [ -d /etc/apt ]; then
-    RELEASE=`lsb_release  -cs | xargs echo -n`
+    RELEASE=`lsb_release  -cs`
     wget -P /tmp https://apt.puppetlabs.com/puppetlabs-release-${RELEASE}.deb
     dpkg -i /tmp/puppetlabs-release-${RELEASE}.deb
     apt-get update
     apt-get -y install puppet
   elif [ -d /etc/yum.repos.d ]; then
-    RELEASE=`lsb_release -r | grep -o [0-9] | head -1 | xargs echo -n`
+    RELEASE=`lsb_release -r | grep -o [0-9] | head -1`
     wget -P /tmp http://yum.puppetlabs.com/puppetlabs-release-el-${RELEASE}.noarch.rpm
     rpm -i /tmp/puppetlabs-release-el-${RELEASE}.noarch.rpm
     yum -y install puppet
@@ -22,17 +24,22 @@ if [ ! -e /usr/bin/puppet ]; then
   echo "Install complete"
 fi
 
-if [[ $DAEMONIZE == 0 || $DAEMONIZE == "false" ]]; then
+#If DAEMONIZE is set to a negative value, unset the variable
+if [[ ${DAEMONIZE} == 0 || ${DAEMONIZE} == "false" ]]; then
   unset DAEMONIZE
 fi
 
-if [ ! -z "$DAEMONIZE" ] && [ ! -z "$RUNINTERVAL" ]; then
-  ARGS="${ARGS} --runinterval $RUNINTERVAL"
-elif [ -z "$DAEMONIZE" ]; then
+#DAEMONIZE determines if puppet agent should run as a daemon
+#RUNINTERVAL is how often puppet should check in with the puppet master
+if [ -e "${DAEMONIZE}" ] && [ -e "${RUNINTERVAL}" ]; then
+  ARGS="${ARGS} --runinterval ${RUNINTERVAL}"
+elif [ -z "${DAEMONIZE}" ]; then
   ARGS="${ARGS} --onetime --no-daemonize"
 fi
 
-if [ ! -z "$WAITFORCERT" ]; then
+#WAITFORCERT is the amount of time to wait for signed cert from puppet master
+#Set to 0 to fail on connection error
+if [ -e "${WAITFORCERT}" ]; then
   ARGS="${ARGS} --waitforcert ${WAITFORCERT}"
 fi
 
