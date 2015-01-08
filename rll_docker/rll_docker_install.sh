@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -ex
 
 if [ -d /etc/apt ]; then
   apt-get install -y docker.io
@@ -9,4 +9,5 @@ elif [ -d /etc/yum.repos.d ]; then
   chkconfig --add docker
 else
   echo "Unsupported distro"
+  exit 1
 fi
