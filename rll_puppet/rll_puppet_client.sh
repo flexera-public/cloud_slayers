@@ -36,7 +36,7 @@
 
 set -ex
 
-ARGS="--server $PUPPET_SERVER"
+args="--server $PUPPET_SERVER"
 
 if [ ! -e /usr/bin/puppet ]; then
   echo "/usr/bin/puppet not found. Installing now."
@@ -64,15 +64,13 @@ if [[ $DAEMONIZE == 0 || $DAEMONIZE == "false" ]]; then
 fi
 
 if [ -n "$DAEMONIZE" ] && [ -n "$RUNINTERVAL" ]; then
-  ARGS="$ARGS --runinterval $RUNINTERVAL"
+  args="$args --runinterval $RUNINTERVAL"
 elif [ -z "$DAEMONIZE" ]; then
-  ARGS="$ARGS --onetime --no-daemonize"
+  args="$args --onetime --no-daemonize"
 fi
 
 if [ -n "$WAITFORCERT" ]; then
-  ARGS="$ARGS --waitforcert $WAITFORCERT"
+  args="$args --waitforcert $WAITFORCERT"
 fi
 
-echo "Running: puppet agent $ARGS"
-
-puppet agent $ARGS
+puppet agent $args
