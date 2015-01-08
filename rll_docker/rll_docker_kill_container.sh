@@ -15,7 +15,7 @@ set -ex
 
 if [ -e /usr/bin/docker ]; then
   cmd="/usr/bin/docker"
-elif [ -e /usr/bin/docker.io ]
+elif [ -e /usr/bin/docker.io ]; then
   cmd="/usr/bin/docker.io"
 else
   echo "Docker binary not found"
