@@ -58,21 +58,17 @@ if [ ! -e /usr/bin/puppet ]; then
   echo "Install complete"
 fi
 
-#If DAEMONIZE is set to a negative value, unset the variable
+#If DAEMONIZE is set to a non-positive value, unset the variable
 if [[ $DAEMONIZE == 0 || $DAEMONIZE == "false" ]]; then
   unset DAEMONIZE
 fi
 
-#DAEMONIZE determines if puppet agent should run as a daemon
-#RUNINTERVAL is how often puppet should check in with the puppet master
 if [ -e "$DAEMONIZE" ] && [ -e "$RUNINTERVAL" ]; then
   ARGS="$ARGS --runinterval $RUNINTERVAL"
 elif [ -z "$DAEMONIZE" ]; then
   ARGS="$ARGS --onetime --no-daemonize"
 fi
 
-#WAITFORCERT is the amount of time to wait for signed cert from puppet master
-#Set to 0 to fail on connection error
 if [ -e "$WAITFORCERT" ]; then
   ARGS="$ARGS --waitforcert $WAITFORCERT"
 fi
