@@ -9,18 +9,18 @@
 #     Default: none
 #     Description: The name of the docker container to kill
 #     Required: true
-#     Advanced: true
+#     Advanced: no
 
 set -ex
 
-if [ -e /usr/bin/docker ]; then
-  cmd="/usr/bin/docker"
-elif [ -e /usr/bin/docker.io ]; then
-  cmd="/usr/bin/docker.io"
+if which docker; then
+  cmd=`which docker`
+elif which docker.io; then
+  cmd=`which docker.io`
 else
   echo "Docker binary not found"
   exit 1
 fi
 
-$cmd kill $CONTAINER || echo "$CONTAINER is not running" && exit 1
+$cmd kill $CONTAINER || echo "$CONTAINER is not running"
 $cmd rm $CONTAINER

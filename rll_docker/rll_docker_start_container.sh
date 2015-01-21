@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
+#!/usr/bin/env bash
 # RightScript Name: Start docker container
 # Description: Start a docker container on an already configured server
-# Packages: puppet
+# Packages: 
 # Inputs:
 #   IMAGE:
 #     Input Type: single
@@ -9,14 +10,14 @@
 #     Default: none
 #     Description: Image name for new container
 #     Required: true
-#     Advanced: true
+#     Advanced: no
 #   NAME:
 #     Input Type: single
 #     Category: Uncategorized
 #     Default: none
 #     Description: Name to assign to container
 #     Required: true
-#     Advanced: true
+#     Advanced: no
 #   PORTS:
 #     Input Type: single
 #     Category: Uncategorized
@@ -24,29 +25,29 @@
 #     Description: Space separated list of ports to be published. 
 #       format: ip:hostPort:containerPort | ip::containerPort | 
 #       hostPort:containerPort | containerPort
-#     Required: true
-#     Advanced: true
+#     Required: no
+#     Advanced: no
 #   COMMAND:
 #     Input Type: single
 #     Category: Uncategorized
 #     Default: none
 #     Description: Command to run in Docker container
 #     Required: true
-#     Advanced: true
+#     Advanced: no
 #   TAG:
 #     Input Type: single
 #     Category: Uncategorized
 #     Default: text:latest
 #     Description: Image tag for new container
 #     Required: true
-#     Advanced: true
+#     Advanced: no
 
 set -ex
 
-if [ -e /usr/bin/docker ]; then
-  cmd="/usr/bin/docker"
-elif [ -e /usr/bin/docker.io ]; then
-  cmd="/usr/bin/docker.io"
+if which docker; then
+  cmd=`which docker`
+elif which docker.io; then
+  cmd=`which docker.io`
 else
   echo "Docker binary not found"
   exit 1
