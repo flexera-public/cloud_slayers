@@ -1,0 +1,101 @@
+---
+- name: Install Python-MySQL
+  apt: 
+    name=python-mysqldb 
+    state=present
+
+- name: Install keystone
+  apt: 
+    name=keystone 
+    state=present
+
+- name: Add keystone database
+  mysql_db: 
+    name=keystone 
+    state=present
+
+- name: Add keystone database user
+  mysql_user: 
+    name=keystone 
+    password={{ keystone_db_password }} 
+    priv=keystone.*:ALL,GRANT 
+    host='%' 
+    state=present
+
+- name: Ensure admin token exists
+  lineinfile: 
+    dest=/etc/keystone/keystone.conf 
+    regexp='^admin_token=.*' 
+    line='admin_token=default_token' 
+    insertafter='^\[DEFAULT\]' 
+    state=present 
+- name: Create admin token for keystone
+  replace: 
+    dest=/etc/keystone/keystone.conf 
+    regexp='^admin_token=.*$' 
+    replace='admin_token={{ admin_token }}'
+
+- name: Ensure db connection exists
+  lineinfile: 
+    dest=/etc/keystone/keystone.conf 
+    regexp='^\s*connection\s*=.*$' 
+    line='connection=mysql://keystone' 
+    insertafter='\[database\]' 
+    state=present 
+- name: Set up db connection
+  replace: 
+    dest=/etc/keystone/keystone.conf 
+    regexp='^\s*connection\s*=.*$' 
+    replace='connection=mysql://keystone:{{ keystone_db_password }}@{{ ansible_all_ipv4_addresses[0] }}/keystone'
+
+- name: Ensure provider directive exists
+  lineinfile: 
+    dest=/etc/keystone/keystone.conf 
+    regexp='^\s*provider\s*=\s*keystone.token.*$' 
+    line='provider=keystone.token.providers.uuid.Provider' 
+    insertafter='\[token\]' 
+    state=present 
+- name: Update provider directive
+  replace: 
+    dest=/etc/keystone/keystone.conf 
+    regexp='^\s*provider\s*=\s*keystone.token.*$' 
+    replace='provider=keystone.token.providers.uuid.Provider'
+
+- name: Ensure driver directive exists
+  lineinfile: 
+    dest=/etc/keystone/keystone.conf 
+    regexp='^\s*driver\s*=\s*keystone.token.*$' 
+    line='driver=keystone.token.persistence.backends.sql.Token' 
+    insertafter='\[token\]' 
+    state=present 
+- name: Update token driver
+  replace: 
+    dest=/etc/keystone/keystone.conf 
+    regexp='^\s*driver\s*=\s*keystone.token.*$' 
+    replace='driver=keystone.token.persistence.backends.sql.Token'
+
+- name: Ensure revoke directive exists
+  lineinfile: 
+    dest=/etc/keystone/keystone.conf 
+    regexp='^\s*driver\s*=\s*keystone.contrib.revoke.*$' 
+    line='driver=keystone.contrib.revoke.backends.sql.Revoke' 
+    insertafter='\[revoke\]' 
+    state=present 
+- name: Update revoke directive
+  replace: 
+    dest=/etc/keystone/keystone.conf 
+    regexp='^\s*driver\s*=\s*keystone.contrib.revoke.*$' 
+    replace='driver=keystone.contrib.revoke.backends.sql.Revoke'
+
+- name: Restart keystone
+  service:
+    name=keystone
+    state=restarted
+
+- name: Sync keystone database
+  command: su -s /bin/sh -c "keystone-manage db_sync" keystone
+
+- name: Create admin tenant
+  shell: OS_SERVICE_TOKEN={{ admin_token }} OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0 /usr/bin/keystone \
+           tenant-create --name admin --description "Admin Tenant" && touch /var/log/keystone/admin_tenant_create
+    creates=/var/log/keystone/admin_tenant_create

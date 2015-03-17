@@ -1,0 +1,26 @@
+---
+- name: Install cloud keyring
+  apt: name=ubuntu-cloud-keyring state=present update_cache=yes
+- name: Add Juno sources
+  shell: echo "deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/juno main" > /etc/apt/sources.list.d/cloudarchive-juno.list
+    creates=/etc/apt/sources.list.d/cloudarchive-juno.list
+- name: Install MariaDB
+  apt: name=mariadb-server state=present update_cache=yes
+- name: Bind mysqld to private address
+  replace: dest=/etc/mysql/my.cnf regexp='^bind-address.*127.0.0.1.*$' replace='bind-address            = {{ ansible_all_ipv4_addresses[0] }}' backup=yes 
+- name: Add default-storage-engine = innodb to mysql config
+  lineinfile: dest=/etc/mysql/my.cnf line='default-storage-engine = innodb' insertafter='^\[mysqld\]$' state=present
+- name: Add innodb_file_per_table to mysql config
+  lineinfile: dest=/etc/mysql/my.cnf line='innodb_file_per_table' insertafter='^\[mysqld\]$' state=present
+- name: Add collation-server = utf8_general_ci to mysql config
+  lineinfile: dest=/etc/mysql/my.cnf line='collation-server = utf8_general_ci' insertafter='^\[mysqld\]$' state=present
+- name: Add init-connect = 'SET NAMES utf8' to mysql config
+  lineinfile: dest=/etc/mysql/my.cnf line="init-connect = 'SET NAMES utf8'" insertafter='^\[mysqld\]$'  state=present
+- name: Add character-set-server = utf8 to mysql config
+  lineinfile: dest=/etc/mysql/my.cnf line="character-set-server = utf8" insertafter='^\[mysqld\]$' state=present
+- name: Restart mysqld
+  service: name=mysql state=restarted
+- name: Install RabbitMQ
+  apt: name=rabbitmq-server state=present
+- name: Set rabbit password
+  command: rabbitmqctl change_password guest {{ rabbit_pass }}
