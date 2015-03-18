@@ -1,0 +1,14 @@
+---
+- name: Install Python-MySQL
+  apt:
+    name=python-mysqldb
+    state=present
+- name: Install cloud keyring
+  apt: 
+    name=ubuntu-cloud-keyring 
+    state=present 
+    update_cache=yes
+- name: Add Juno sources
+  shell: echo "deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/juno main" > /etc/apt/sources.list.d/cloudarchive-juno.list
+    creates=/etc/apt/sources.list.d/cloudarchive-juno.list
+

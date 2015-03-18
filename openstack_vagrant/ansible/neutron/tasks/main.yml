@@ -1,0 +1,81 @@
+---
+- name: Install neutron
+  apt: 
+    name={{ item }}
+    state=present
+  with_items:
+    - neutron-server
+    - neutron-plugin-ml2
+    - python-neutronclient
+    - neutron-plugin-openvswitch-agent
+    - neutron-l3-agent
+    - neutron-dhcp-agent
+
+- name: Add neutron database
+  mysql_db: 
+    name=neutron
+    state=present
+
+- name: Add neutron database user
+  mysql_user: 
+    name=neutron 
+    password={{ neutron_db_pass }} 
+    priv=neutron.*:ALL,GRANT 
+    host='%' 
+    state=present
+
+- name: Create neutron.conf
+  template:
+    src=neutron.conf
+    dest=/etc/neutron/neutron.conf
+    owner=neutron
+    group=neutron
+    mode=0644
+
+- name: Create ml2_conf.ini
+  template:
+    src=ml2_conf.ini
+    dest=/etc/neutron/plugins/ml2/ml2_conf.ini
+    owner=neutron
+    group=neutron
+    mode=0644
+
+#Sync neutron db
+
+- name: Sync neutron database
+  command: su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade juno" neutron
+
+#Basic tenant and user creation
+
+- name: Create neutron user
+  shell: OS_SERVICE_TOKEN={{ admin_token }} OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0 /usr/bin/keystone \
+           user-create --name neutron --pass "{{ neutron_pass }}" && touch /var/log/keystone/neutron_user_create
+    creates=/var/log/keystone/neutron_user_create
+
+- name: Assign admin role to neutron user
+  shell: OS_SERVICE_TOKEN={{ admin_token }} OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0 /usr/bin/keystone \
+           user-role-add --user neutron --tenant service --role admin && touch /var/log/keystone/neutron_role_assign
+    creates=/var/log/keystone/neutron_role_assign
+
+- name: Create neutron service
+  shell: OS_SERVICE_TOKEN={{ admin_token }} OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0 /usr/bin/keystone \
+           service-create --name neutron --type network --description "Neutron"  && touch /var/log/keystone/neutron_service_create
+    creates=/var/log/keystone/neutron_service_create
+
+- name: Create neutron endpoint
+  shell: OS_SERVICE_TOKEN={{ admin_token }} OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0 /usr/bin/keystone \
+           endpoint-create \
+           --service-id $(OS_SERVICE_TOKEN={{ admin_token }} OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0 keystone service-list | awk '/ network / {print $2}') \
+           --publicurl http://{{ public_ip }}:9696 \
+           --internalurl http://{{ ansible_all_ipv4_addresses[0] }}:9696 \
+           --adminurl http://{{ ansible_all_ipv4_addresses[0] }}:9696 \
+           --region {{ region }} && touch /var/log/keystone/neutron_endpoint_create
+    creates=/var/log/keystone/neutron_endpoint_create
+
+- name: Restart neutron
+  service:
+    name={{ item }}
+    state=restarted
+  with_items:
+    - neutron-server
+

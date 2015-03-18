@@ -1,0 +1,118 @@
+---
+- name: Install nova-api
+  apt: 
+    name=nova-api
+    state=present
+
+- name: Install nova-scheduler
+  apt: 
+    name=nova-scheduler
+    state=present
+
+- name: Install nova-novncproxy
+  apt: 
+    name=nova-novncproxy
+    state=present
+
+- name: Install nova-consoleauth
+  apt: 
+    name=nova-consoleauth
+    state=present
+
+- name: Install nova-conductor
+  apt: 
+    name=nova-conductor
+    state=present
+
+- name: Install nova-cert
+  apt: 
+    name=nova-cert
+    state=present
+
+- name: Install nova client
+  apt: 
+    name=python-novaclient
+    state=present
+
+- name: Add nova database
+  mysql_db: 
+    name=nova
+    state=present
+
+- name: Add nova database user
+  mysql_user: 
+    name=nova 
+    password={{ nova_db_pass }} 
+    priv=nova.*:ALL,GRANT 
+    host='%' 
+    state=present
+
+- name: Create nova.conf
+  template:
+    src=nova.conf
+    dest=/etc/nova/nova.conf
+    owner=nova
+    group=nova
+    mode=0644
+
+- name: Restart nova-api
+  service:
+    name=nova-api
+    state=restarted
+
+- name: Restart nova-cert
+  service:
+    name=nova-cert
+    state=restarted
+
+- name: Restart nova-consoleauth
+  service:
+    name=nova-consoleauth
+    state=restarted
+
+- name: Restart nova-scheduler
+  service:
+    name=nova-scheduler
+    state=restarted
+
+- name: Restart nova-conductor
+  service:
+    name=nova-conductor
+    state=restarted
+
+- name: Restart nova-novncproxy
+  service:
+    name=nova-novncproxy
+    state=restarted
+
+#Sync nova db
+
+- name: Sync nova database
+  command: su -s /bin/sh -c "nova-manage db sync" nova
+
+#Basic tenant and user creation
+
+- name: Create nova user
+  shell: OS_SERVICE_TOKEN={{ admin_token }} OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0 /usr/bin/keystone \
+           user-create --name nova --pass "{{ nova_pass }}" && touch /var/log/keystone/nova_user_create
+    creates=/var/log/keystone/nova_user_create
+
+- name: Assign admin role to nova user
+  shell: OS_SERVICE_TOKEN={{ admin_token }} OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0 /usr/bin/keystone \
+           user-role-add --user nova --tenant service --role admin && touch /var/log/keystone/nova_role_assign
+    creates=/var/log/keystone/nova_role_assign
+
+- name: Create nova service
+  shell: OS_SERVICE_TOKEN={{ admin_token }} OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0 /usr/bin/keystone \
+           service-create --name nova --type compute --description "Nova"  && touch /var/log/keystone/nova_service_create
+    creates=/var/log/keystone/nova_service_create
+
+- name: Create nova endpoint
+  shell: OS_SERVICE_TOKEN={{ admin_token }} OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0 /usr/bin/keystone \
+           endpoint-create \
+           --service-id $(OS_SERVICE_TOKEN={{ admin_token }} OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0 keystone service-list | awk '/ compute / {print $2}') \
+           --publicurl http://{{ public_ip }}:8774/v2/%\(tenant_id\)s \
+           --internalurl http://{{ ansible_all_ipv4_addresses[0] }}:8774/v2/%\(tenant_id\)s \
+           --adminurl http://{{ ansible_all_ipv4_addresses[0] }}:8774/v2/%\(tenant_id\)s \
+           --region {{ region }} && touch /var/log/keystone/nova_endpoint_create
+    creates=/var/log/keystone/nova_endpoint_create

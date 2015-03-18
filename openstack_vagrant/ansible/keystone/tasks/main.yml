@@ -17,85 +17,82 @@
 - name: Add keystone database user
   mysql_user: 
     name=keystone 
-    password={{ keystone_db_password }} 
+    password={{ keystone_db_pass }} 
     priv=keystone.*:ALL,GRANT 
     host='%' 
     state=present
 
-- name: Ensure admin token exists
-  lineinfile: 
-    dest=/etc/keystone/keystone.conf 
-    regexp='^admin_token=.*' 
-    line='admin_token=default_token' 
-    insertafter='^\[DEFAULT\]' 
-    state=present 
-- name: Create admin token for keystone
-  replace: 
-    dest=/etc/keystone/keystone.conf 
-    regexp='^admin_token=.*$' 
-    replace='admin_token={{ admin_token }}'
+#Set up keystone config file
 
-- name: Ensure db connection exists
-  lineinfile: 
-    dest=/etc/keystone/keystone.conf 
-    regexp='^\s*connection\s*=.*$' 
-    line='connection=mysql://keystone' 
-    insertafter='\[database\]' 
-    state=present 
-- name: Set up db connection
-  replace: 
-    dest=/etc/keystone/keystone.conf 
-    regexp='^\s*connection\s*=.*$' 
-    replace='connection=mysql://keystone:{{ keystone_db_password }}@{{ ansible_all_ipv4_addresses[0] }}/keystone'
-
-- name: Ensure provider directive exists
-  lineinfile: 
-    dest=/etc/keystone/keystone.conf 
-    regexp='^\s*provider\s*=\s*keystone.token.*$' 
-    line='provider=keystone.token.providers.uuid.Provider' 
-    insertafter='\[token\]' 
-    state=present 
-- name: Update provider directive
-  replace: 
-    dest=/etc/keystone/keystone.conf 
-    regexp='^\s*provider\s*=\s*keystone.token.*$' 
-    replace='provider=keystone.token.providers.uuid.Provider'
-
-- name: Ensure driver directive exists
-  lineinfile: 
-    dest=/etc/keystone/keystone.conf 
-    regexp='^\s*driver\s*=\s*keystone.token.*$' 
-    line='driver=keystone.token.persistence.backends.sql.Token' 
-    insertafter='\[token\]' 
-    state=present 
-- name: Update token driver
-  replace: 
-    dest=/etc/keystone/keystone.conf 
-    regexp='^\s*driver\s*=\s*keystone.token.*$' 
-    replace='driver=keystone.token.persistence.backends.sql.Token'
-
-- name: Ensure revoke directive exists
-  lineinfile: 
-    dest=/etc/keystone/keystone.conf 
-    regexp='^\s*driver\s*=\s*keystone.contrib.revoke.*$' 
-    line='driver=keystone.contrib.revoke.backends.sql.Revoke' 
-    insertafter='\[revoke\]' 
-    state=present 
-- name: Update revoke directive
-  replace: 
-    dest=/etc/keystone/keystone.conf 
-    regexp='^\s*driver\s*=\s*keystone.contrib.revoke.*$' 
-    replace='driver=keystone.contrib.revoke.backends.sql.Revoke'
+- name: Set up keystone.conf
+  template:
+    src=keystone.conf
+    dest=/etc/keystone/keystone.conf
+    owner=keystone
+    group=keystone
+    mode=0644
 
 - name: Restart keystone
   service:
     name=keystone
     state=restarted
 
+#Sync keystone db
+
 - name: Sync keystone database
   command: su -s /bin/sh -c "keystone-manage db_sync" keystone
+
+#Basic tenant and user creation
 
 - name: Create admin tenant
   shell: OS_SERVICE_TOKEN={{ admin_token }} OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0 /usr/bin/keystone \
            tenant-create --name admin --description "Admin Tenant" && touch /var/log/keystone/admin_tenant_create
     creates=/var/log/keystone/admin_tenant_create
+
+- name: Create admin user
+  shell: OS_SERVICE_TOKEN={{ admin_token }} OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0 /usr/bin/keystone \
+           user-create --name admin --pass "{{ admin_pass }}" && touch /var/log/keystone/admin_user_create
+    creates=/var/log/keystone/admin_user_create
+
+- name: Create admin role
+  shell: OS_SERVICE_TOKEN={{ admin_token }} OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0 /usr/bin/keystone \
+           role-create --name admin && touch /var/log/keystone/admin_role_create
+    creates=/var/log/keystone/admin_role_create
+
+- name: Assign admin role to admin user
+  shell: OS_SERVICE_TOKEN={{ admin_token }} OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0 /usr/bin/keystone \
+           user-role-add --user admin --tenant admin --role admin && touch /var/log/keystone/admin_role_assign
+    creates=/var/log/keystone/admin_role_assign
+
+- name: Create service tenant
+  shell: OS_SERVICE_TOKEN={{ admin_token }} OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0 /usr/bin/keystone \
+           tenant-create --name service --description "Service Tenant" && touch /var/log/keystone/service_tenant_create
+    creates=/var/log/keystone/service_tenant_create
+
+- name: Create keystone service
+  shell: OS_SERVICE_TOKEN={{ admin_token }} OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0 /usr/bin/keystone \
+           service-create --name keystone --type identity --description "Keystone"  && touch /var/log/keystone/keystone_service_create
+    creates=/var/log/keystone/keystone_service_create
+
+- name: Create keystone endpoint
+  shell: OS_SERVICE_TOKEN={{ admin_token }} OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0 /usr/bin/keystone \
+           endpoint-create \
+           --service-id $(OS_SERVICE_TOKEN={{ admin_token }} OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0 keystone service-list | awk '/ identity / {print $2}') \
+           --publicurl http://{{ public_ip }}:5000/v2.0 \
+           --internalurl http://{{ ansible_all_ipv4_addresses[0] }}:5000/v2.0 \
+           --adminurl http://{{ ansible_all_ipv4_addresses[0] }}:35357/v2.0 \
+           --region {{ region }} && touch /var/log/keystone/keystone_endpoint_create
+    creates=/var/log/keystone/keystone_endpoint_create
+
+- name: Register service tenant ID
+  shell: OS_SERVICE_TOKEN={{ admin_token }} OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0 /usr/bin/keystone \
+           tenant-list | grep  service | awk '{ print $2 }' | xargs echo -n
+  register: service_tenant_id
+
+- name: Create admin openrc file
+  template: 
+    src=openrc
+    dest=/root/openrc
+    owner=root
+    group=root
+    mode=0744

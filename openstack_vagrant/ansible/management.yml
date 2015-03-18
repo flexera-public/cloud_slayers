@@ -1,5 +1,10 @@
 - hosts: all
   sudo: yes
   roles:
+    - openstack_base
     - mgmt_base
     - keystone
+    - glance
+    - nova
+    - neutron
+    - neutron-network
