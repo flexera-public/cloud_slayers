@@ -13,6 +13,6 @@ sleep 5
 result = client.query_async_job_result({:jobid => jobid})
 url =  result["jobresult"]["template"]["url"]
 name = result["jobresult"]["template"]["name"]
-ext = url.split(//).last(3).join
+ext = url.match(/(qcow2$|ova$|vhd$)/).to_s
 name = 
 `curl #{url} -o "#{name}.#{ext}"`
