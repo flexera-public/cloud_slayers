@@ -34,6 +34,7 @@ require 'rubygems'
 require 's3'
 require 'pty'
 require 'expect'
+require 'fileutils'
 
 hostname = ENV['HOSTNAME']
 s3_key = ENV['S3KEY']
@@ -58,7 +59,7 @@ comp-lzo
 verb 3
 mute 20"
 
-def is_hostname_taken?(hostname)
+def is_hostname_taken(hostname)
   if File.file?("/etc/openvpn/easyrsa/pki/issued/#{hostname}.crt")
     puts 'Cert already exists'
     return TRUE
@@ -87,12 +88,14 @@ def create_server_cert(hostname, ca_password)
 end
 
 def create_conf_bundle(hostname)
-  `cp /etc/openvpn/easy-rsa/pki/issued/#{hostname}.crt /tmp && cp /etc/openvpn/easy-rsa/pki/private/#{hostname}.key /tmp && cp /etc/openvpn/ca.crt /tmp && cp /tmp/#{hostname}.conf /tmp`
+  FileUtils.copy("/etc/openvpn/easy-rsa/pki/private/#{hostname}.key", "/tmp")
+  FileUtils.copy("/etc/openvpn/ca.crt", "/tmp")
+  FileUtils.copy("/etc/openvpn/easy-rsa/pki/issued/#{hostname}.crt", "/tmp")
   `cd /tmp && tar -cvzf /tmp/#{hostname}.tar.gz #{hostname}.crt #{hostname}.key #{hostname}.conf ca.crt`
-  File.delete("/tmp/#{hostname}.crt")
-  File.delete("/tmp/#{hostname}.key")
-  File.delete("/tmp/#{hostname}.conf")
-  File.delete('/tmp/ca.crt')
+  FileUtils.rm("/tmp/#{hostname}.crt")
+  FileUtils.rm("/tmp/#{hostname}.key")
+  FileUtils.rm("/tmp/#{hostname}.conf")
+  FileUtils.rm('/tmp/ca.crt')
   return TRUE
 rescue
   puts 'Bundle creation failed'
@@ -111,7 +114,7 @@ rescue
 end
 
 def deliver_package(hostname, s3_key, s3_secret)
-  service = S3::Service.new(access_key_id: s3_key, secret_access_key: s3_secret)
+  service = S3::Service.new(:access_key_id => s3_key, :secret_access_key => s3_secret)
   privatecloudtools = service.buckets.find('privatecloudtools')
   conffile = privatecloudtools.objects.build("OpenVPN_Certs/#{hostname}.tar.gz")
   conffile.content = open("/tmp/#{hostname}.tar.gz")
@@ -122,16 +125,15 @@ rescue
   false
 end
 
-if is_hostname_taken?(hostname)
+if is_hostname_taken(hostname)
   puts 'Hostname already taken'
   exit 1
 end
-
 if create_server_cert(hostname, ca_password) == FALSE
   puts 'Cert creation failed'
   exit 1
 end
-
+sleep(1)
 if create_server_conf(hostname) == FALSE
   puts 'Conf File creation failed'
   exit 1
@@ -140,7 +142,6 @@ if create_conf_bundle(hostname) == FALSE
   puts 'Creating cert/conf bundle failed'
   exit 1
 end
-
 if deliver_package(hostname, s3_key, s3_secret) == FALSE
   puts 'Uploading cert/conf bundle to S3 failed'
   exit 1
