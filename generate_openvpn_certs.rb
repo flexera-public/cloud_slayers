@@ -78,13 +78,11 @@ def create_server_cert(hostname, ca_password)
   Dir.chdir '/etc/openvpn/easy-rsa'
   begin
     PTY.spawn("/etc/openvpn/easy-rsa/easyrsa build-client-full #{hostname} nopass") do |easy_out, easy_in, _pid|
-    easy_out.expect(/ca\.key\:/) { |r| easy_in.printf(ca_password) }
-    easy_out.expect(/Data Base Updated/)
+      easy_out.expect(/ca\.key\:/) { easy_in.print "#{ca_password}\n"}
     end
-    return TRUE
   rescue
     puts 'Something failed in the generation of the certificate'
-    return FALSE
+    false
   end
 end
 
