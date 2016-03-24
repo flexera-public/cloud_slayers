@@ -59,27 +59,22 @@ comp-lzo
 verb 3
 mute 20"
 
-def is_hostname_taken(hostname)
-  if File.file?("/etc/openvpn/easyrsa/pki/issued/#{hostname}.crt")
+def is_hostname_taken?(hostname)
+  if File.file?("/etc/openvpn/easyrsa/pki/issued/#{hostname}.crt") ||
+     File.file?("/etc/openvpn/easyrsa/pki/private/#{hostname}.key") ||
+     File.file?("/etc/openvpn/easyrsa/pki/reqs/#{hostname}.req")
     puts 'Cert already exists'
-    return TRUE
+    true
+  else
+    false
   end
-  if File.file?("/etc/openvpn/easyrsa/pki/private/#{hostname}.key")
-    puts 'Cert already exists'
-    return TRUE
-  end
-  if File.file?("/etc/openvpn/easyrsa/pki/reqs/#{hostname}.req")
-    puts 'Cert already exists'
-    return TRUE
-  end
-  false
 end
 
 def create_server_cert(hostname, ca_password)
   Dir.chdir '/etc/openvpn/easy-rsa'
   begin
     PTY.spawn("/etc/openvpn/easy-rsa/easyrsa build-client-full #{hostname} nopass") do |easy_out, easy_in, _pid|
-      easy_out.expect(/ca\.key\:/) { easy_in.print "#{ca_password}\n"}
+      easy_out.expect(/ca\.key\:/) { easy_in.print "#{ca_password}\n" }
     end
   rescue
     puts 'Something failed in the generation of the certificate'
@@ -88,9 +83,9 @@ def create_server_cert(hostname, ca_password)
 end
 
 def create_conf_bundle(hostname)
-  FileUtils.copy("/etc/openvpn/easy-rsa/pki/private/#{hostname}.key", "/tmp")
-  FileUtils.copy("/etc/openvpn/ca.crt", "/tmp")
-  FileUtils.copy("/etc/openvpn/easy-rsa/pki/issued/#{hostname}.crt", "/tmp")
+  FileUtils.copy("/etc/openvpn/easy-rsa/pki/private/#{hostname}.key", '/tmp')
+  FileUtils.copy('/etc/openvpn/ca.crt', '/tmp')
+  FileUtils.copy("/etc/openvpn/easy-rsa/pki/issued/#{hostname}.crt", '/tmp')
   `cd /tmp && tar -cvzf /tmp/#{hostname}.tar.gz #{hostname}.crt #{hostname}.key #{hostname}.conf ca.crt`
   FileUtils.rm("/tmp/#{hostname}.crt")
   FileUtils.rm("/tmp/#{hostname}.key")
@@ -114,7 +109,7 @@ rescue
 end
 
 def deliver_package(hostname, s3_key, s3_secret)
-  service = S3::Service.new(:access_key_id => s3_key, :secret_access_key => s3_secret)
+  service = S3::Service.new(access_key_id: s3_key, secret_access_key: s3_secret)
   privatecloudtools = service.buckets.find('privatecloudtools')
   conffile = privatecloudtools.objects.build("OpenVPN_Certs/#{hostname}.tar.gz")
   conffile.content = open("/tmp/#{hostname}.tar.gz")
@@ -125,7 +120,7 @@ rescue
   false
 end
 
-if is_hostname_taken(hostname)
+if is_hostname_taken?(hostname)
   puts 'Hostname already taken'
   exit 1
 end
