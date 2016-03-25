@@ -19,6 +19,7 @@ def generate_certs(hostname, refresh_token)
     sleep(10)
   rescue
     puts 'Something failed with the execution of the remote script.'
+    return 1
   end
 end
 
@@ -28,9 +29,9 @@ def get_cert_bundle(hostname, s3key, s3_secret)
     privatecloudtools = service.buckets.find('privatecloudtools')
     object = privatecloudtools.objects.find("#{hostname}.tar.gz")
     File.open("/tmp/#{hostname}.tar.gz", 'w+') { |file| file.write(object.content) }
-    FileUtils.rm("/tmp/#{hostname}.tar.gz")
   rescue
     puts 'Failed to save conf bundle from S3'
+    return 1
   end
 end
 
@@ -39,6 +40,7 @@ def install_cert_bundle(hostname)
     `tar -xvf /tmp/#{hostname}.tar.gz -C /etc/openvpn`
   rescue
     puts 'Failed to instal cert bundle'
+    return 1
   end
 end
 
