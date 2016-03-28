@@ -27,8 +27,13 @@ def get_cert_bundle(hostname, s3key, s3_secret)
   begin
     service = S3::Service.new(:access_key_id => s3key, :secret_access_key => s3_secret)
     privatecloudtools = service.buckets.find('privatecloudtools')
-    object = privatecloudtools.objects.find("#{hostname}.tar.gz")
-    File.open("/tmp/#{hostname}.tar.gz", 'w+') { |file| file.write(object.content) }
+    certbundle = privatecloudtools.objects.find("#{hostname}.tar.gz")
+    url=icertbundle.temporary_url
+    File.open("/tmp/#{hostname}.tar.gz", "wb") do |saved_file|
+      open(url, "rb") do |read_file|
+      saved_file.write(read_file.read)
+    end
+  end
   rescue
     puts 'Failed to save conf bundle from S3'
     return 1
