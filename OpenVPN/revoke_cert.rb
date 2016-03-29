@@ -33,4 +33,3 @@ end
 if revoke_cert( hostname, ca_password )
   delete_certs( hostname )
 end
-
