@@ -43,8 +43,9 @@ end
 def install_cert_bundle(hostname)
   begin
     `tar -xvf /tmp/#{hostname}.tar.gz -C /etc/openvpn`
+    `service openvpn start` 
   rescue
-    puts 'Failed to instal cert bundle'
+    puts 'Failed to install cert bundle'
     return 1
   end
 end
