@@ -1,6 +1,17 @@
 #!/usr/bin/env ruby
+# ---
+# RightScript Name: Adduser
+# Description: < Addes
+# Inputs:
+#   HASHED_PASSWORD:
+#     Input Type: single
+#     Category: Credentials
+#     Required: True
+#     Advanced: false
+# Attachments: []
+# ...
 
-PASSWORD=ENV['hashed_password']
+PASSWORD=ENV['HASHED_PASSWORD']
 
 def create_qa_nightly_user()
   begin

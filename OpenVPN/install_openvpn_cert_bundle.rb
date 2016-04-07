@@ -28,7 +28,7 @@ def get_cert_bundle(hostname, s3key, s3_secret)
     service = S3::Service.new(:access_key_id => s3key, :secret_access_key => s3_secret)
     privatecloudtools = service.buckets.find('privatecloudtools')
     certbundle = privatecloudtools.objects.find("#{hostname}.tar.gz")
-    url=icertbundle.temporary_url
+    url=certbundle.temporary_url
     File.open("/tmp/#{hostname}.tar.gz", "wb") do |saved_file|
       open(url, "rb") do |read_file|
       saved_file.write(read_file.read)
@@ -45,7 +45,7 @@ def install_cert_bundle(hostname)
     `tar -xvf /tmp/#{hostname}.tar.gz -C /etc/openvpn`
     `service openvpn start` 
   rescue
-    puts 'Failed to install cert bundle'
+    puts 'Failed to install cert bundle or start openvpn'
     return 1
   end
 end

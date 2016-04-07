@@ -3,9 +3,9 @@
 set -ex
 
 if [ -d /etc/apt ]; then
-  sudo apt-get install -y openvpn
+  sudo apt-get install -y openvpn rubygems
 elif [ -d /etc/yum.repos.d ]; then
-  yum install -y openvpn
+  yum install -y openvpn rubygems
 else
   echo "unsupported distribution!"
   exit 1
