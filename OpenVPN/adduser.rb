@@ -1,7 +1,8 @@
 #!/usr/bin/env ruby
+
 # ---
-# RightScript Name: Adduser
-# Description: < Addes
+# RightScript Name: Adds qa_nightly user
+# Description: < Adds required qa_nightly user for jump boxes
 # Inputs:
 #   HASHED_PASSWORD:
 #     Input Type: single
@@ -11,7 +12,7 @@
 # Attachments: []
 # ...
 
-PASSWORD=ENV['HASHED_PASSWORD']
+password=ENV['HASHED_PASSWORD']
 
 def create_qa_nightly_user()
   begin
@@ -21,4 +22,4 @@ def create_qa_nightly_user()
   end
 end
 
-create_qa_nightly_user
+create_qa_nightly_user( password )
