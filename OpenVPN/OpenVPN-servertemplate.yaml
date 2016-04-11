@@ -1,0 +1,24 @@
+Name: OpenVPN ServerTemplate
+Description: ServerTemplate for OpenVPN/Jump box servers
+Inputs:
+  HASHED_PASSWORD: "blank"
+  CA_CRT: "blank"
+  CLIENT_CONFIG_ROUTING: "blank"
+  DH_PEM: "blank"
+  HOSTNAME: "blank"
+  MANAGEMENT_PASSWORD: "blank"
+  SERVER_CRT: "blank"
+  SERVER_IP: "blank"
+  SERVER_KEY: "blank"
+  SERVER_ROLE: "blank"
+RightScripts:
+  Boot:
+  - adduser.rb
+  - Install_OpenVPN.sh
+  - configure_openvpn.rb
+  - Start_OpenVPN.sh
+  Operational:
+  Decommission:
+MultiCloudImages:
+- Href: /api/multi_cloud_images/393611004
+- Href: /api/multi_cloud_images/393605004

@@ -1,4 +1,64 @@
 #!/usr/bin/env ruby
+# ---
+# RightScript Name: Configure Openvpn
+# Description: Creates configuration files and certs for OpenVPN
+# Inputs:
+#   CA_CRT:
+#     Category: Certs
+#     Description: Certificate Authority Certificate
+#     Input Type: single
+#     Required: true
+#     Advanced: false
+#   CLIENT_CONFIG_ROUTING:
+#     Category: Config
+#     Description: A listing of the routed subnets
+#     Input Type: single
+#     Required: false
+#     Advanced: false
+#   DH_PEM:
+#     Category: Certs
+#     Description: Diffie-Hellman Cert.  Only required for OpenVPN Server
+#     Input Type: single
+#     Required: false
+#     Advanced: false
+#   HOSTNAME:
+#     Category: Config
+#     Description: Hostname
+#     Input Type: single
+#     Required: true
+#     Advanced: false
+#   MANAGEMENT_PASSWORD:
+#     Category: Config
+#     Description: Password for monitoring host
+#     Input Type: single
+#     Required: false
+#     Advanced: false
+#   SERVER_CRT:
+#     Category: Certs 
+#     Description: Certificate for server
+#     Input Type: single
+#     Required: true
+#     Advanced: false
+#   SERVER_IP:
+#     Category: Config 
+#     Description: The ip address of the OpenVPN server
+#     Input Type: single
+#     Required: true
+#     Advanced: false
+#   SERVER_KEY:
+#     Category: Certs
+#     Description: The secret keyfile for the server
+#     Input Type: single
+#     Required: true
+#     Advanced: false
+#   SERVER_ROLE:
+#     Category: Config
+#     Description: Either 'server' or 'client' 
+#     Input Type: single
+#     Required: true
+#     Advanced: false
+# Attachments: []
+# ...
 
 require 'fileutils'
 
