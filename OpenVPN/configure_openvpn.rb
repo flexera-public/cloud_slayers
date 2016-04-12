@@ -64,7 +64,7 @@ require 'fileutils'
 
 $hostname = ENV['HOSTNAME']
 $server_ip = ENV['SERVER_IP']
-server_role = ENV['SERVER_ROLE']
+$server_role = ENV['SERVER_ROLE']
 client_config_routing = ENV['CLIENT_CONFIG_ROUTING']
 $ca_crt = ENV['CA_CRT']
 $dh_pem = ENV['DH_PEM']
@@ -74,22 +74,20 @@ management_password = ENV['MANAGEMENT_PASSWORD']
 
 raise 'ERROR: you must set hostname' unless $hostname
 raise 'ERROR: you must set server_role' unless $server_role
-raise 'ERROR: you must set server_ip' unless server_ip
+raise 'ERROR: you must set server_ip' unless $server_ip
 raise 'ERROR: you must set ca_crt' unless $ca_crt
 raise 'ERROR: you must set server_crt' unless $server_crt
 raise 'ERROR: you must set server_key' unless $server_key
-raise 'ERROR: you must set client_config_routing' unless client_config_routing
 
 $base_config = """proto udp
 dev tun
-nobind
 user nobody
 group nobody
 persist-key
 persist-tun
 ca ca.crt
-cert #{hostname}
-key #{hostname}.key
+cert #{$hostname}.crt
+key #{$hostname}.key
 ;ns-cert-type server
 cipher AES-256-CBC
 comp-lzo
@@ -97,9 +95,9 @@ verb 3
 mute 20
 """
 
-$server_config = """local #{server_ip}
+$server_config = """local 0.0.0.0
 port 1194
-management #{server_ip} 4505 /etc/openvpn/management-password
+management 0.0.0.0 4505 /etc/openvpn/management-password
 dh dh.pem
 server 10.8.0.0 255.255.255.0
 ifconfig-pool-persist ipp.txt
@@ -112,11 +110,12 @@ verb 3
 mute 20
 """
 
-$client_config = 'remote 173.227.0.228 1194'
+$client_config = """remote #{$server_ip} 1194
+nobind"""
 
 def generate_conf(server_role)
   if server_role == 'server'
-    config = $server_config + $baseconfig
+    config = $server_config + $base_config
   end
   if server_role == 'client'
     config = $client_config + $base_config
@@ -170,12 +169,17 @@ def install_certs(server_role)
 end
 
 def install_ccd_files(client_config_routing)
+  output=''
   client_config_routing.split(';').each do |route|
+    output=''
     host = route.split('=')
+    host[1].split(',').each do |route|
+      output<<"iroute #{route} 255.255.255.0\n"
+    end
     begin
-      File.open("/etc/openvpn/ccd/#{host[0]}", 'a+') { |f| f.write("iroute #{host[1].gsub(/,/, '\niroute ')}") }
+      File.open("/etc/openvpn/ccd/#{host[0]}", 'a+') { |f| f.write(output) }
     rescue
-      puts 'Cannot create CCD files'
+      puts "Can't create CCD file"
     end
   end
 end
@@ -208,11 +212,34 @@ def update_iptables
   end
 end
 
-install_conf(server_role)
-install_certs(server_role)
-if server_role == 'server'
+def update_conf(client_config_routing)
+  output=''
+  client_config_routing.split(';').each do |route|
+    host = route.split('=')
+    if host[0] == $hostname
+      host[1].split(',').each do |route|
+        output<<"push \"route #{route} 255.255.255.0\"\n"
+      end  
+    else
+      host[1].split(',').each do |route|
+        output<<"route #{route} 255.255.255.0\n"
+        output<<"push \"route #{route} 255.255.255.0\"\n"
+      end
+    end
+  end
+  begin
+    File.open("/etc/openvpn/server.conf", 'a+') { |f| f.write(output) }
+  rescue
+    puts "Can't update routing config"
+  end
+end
+
+install_conf($server_role)
+install_certs($server_role)
+if $server_role == 'server'
   install_ccd_files(client_config_routing)
   install_management_password(management_password)
+  update_conf(client_config_routing)
 end
 enable_ip_forwarding
 update_iptables

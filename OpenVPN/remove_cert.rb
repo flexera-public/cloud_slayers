@@ -1,4 +1,24 @@
 #!/usr/bin/env ruby
+# ---
+# RightScript Name: Remove Cert
+# Description: (put your description here, it can be multiple lines using YAML syntax)
+# Inputs:
+#   S3_SECRET:
+#     Category: (put your input category here)
+#     Description: (put your input description here, it can be multiple lines using
+#       YAML syntax)
+#     Input Type: single
+#     Required: false
+#     Advanced: false
+#   S3KEY:
+#     Category: (put your input category here)
+#     Description: (put your input description here, it can be multiple lines using
+#       YAML syntax)
+#     Input Type: single
+#     Required: false
+#     Advanced: false
+# Attachments: []
+# ...
 
 require 'fileutils'
 require 's3'

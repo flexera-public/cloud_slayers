@@ -1,4 +1,24 @@
 #!/usr/bin/env ruby
+# ---
+# RightScript Name: Revoke Cert
+# Description: (put your description here, it can be multiple lines using YAML syntax)
+# Inputs:
+#   CA_PASSWORD:
+#     Category: (put your input category here)
+#     Description: (put your input description here, it can be multiple lines using
+#       YAML syntax)
+#     Input Type: single
+#     Required: false
+#     Advanced: false
+#   HOSTNAME:
+#     Category: (put your input category here)
+#     Description: (put your input description here, it can be multiple lines using
+#       YAML syntax)
+#     Input Type: single
+#     Required: false
+#     Advanced: false
+# Attachments: []
+# ...
 
 require 'pty'
 require 'expect'

@@ -15,7 +15,7 @@
 password = ENV['HASHED_PASSWORD']
 
 def create_qa_nightly_user(password)
-  `sudo /bin/useradd -m qa_nightly -p #{password}`
+  `/bin/useradd -m qa_nightly -p #{password}`
 rescue
   puts 'unable to add user'
 end

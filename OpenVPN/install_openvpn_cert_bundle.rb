@@ -1,4 +1,24 @@
 #!/usr/bin/env ruby
+# ---
+# RightScript Name: Install Openvpn Cert Bundle
+# Description: (put your description here, it can be multiple lines using YAML syntax)
+# Inputs:
+#   S3_SECRET:
+#     Category: S3
+#     Description: (put your input description here, it can be multiple lines using
+#       YAML syntax)
+#     Input Type: single
+#     Required: true
+#     Advanced: false
+#   S3KEY:
+#     Category: S3
+#     Description: (put your input description here, it can be multiple lines using
+#       YAML syntax)
+#     Input Type: single
+#     Required: true
+#     Advanced: false
+# Attachments: []
+# ...
 
 require 'fileutils'
 require 's3'

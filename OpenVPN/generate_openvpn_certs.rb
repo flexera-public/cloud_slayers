@@ -44,7 +44,7 @@ ca_password = ENV['CA_PASSWORD']
 @conf = "client
 dev tun
 proto udp
-remote 173.227.0.228 1194
+remote 173.227.0.180 1194
 nobind
 user nobody
 group nobody
