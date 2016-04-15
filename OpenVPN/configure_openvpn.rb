@@ -111,7 +111,9 @@ mute 20
 """
 
 $client_config = """remote #{$server_ip} 1194
-nobind"""
+nobind
+client
+"""
 
 def generate_conf(server_role)
   if server_role == 'server'
