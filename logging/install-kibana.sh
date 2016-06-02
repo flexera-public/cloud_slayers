@@ -1,14 +1,26 @@
 #! /usr/bin/sudo /bin/bash
+# ---
+# RightScript Name: Install Kibana
+# Description: Installs Kibana and configures it for CloudSlayer use
+# Inputs: {}
+# Attachments: []
+# ...
+
+#! /usr/bin/sudo /bin/bash
+# ---
+# RightScript Name: Install Kibana
+# Description: Installs Kibana and configures it for CloudSlayer use
+# Inputs: {}
+# Attachments: []
+# ...
 
 /usr/sbin/groupadd -g 1999 kibana
 /usr/sbin/useradd -u 1999 -g 1999 kibana
+/bin/mkdir -p /opt/kibana
 
 cd /tmp
 /usr/bin/wget https://download.elastic.co/kibana/kibana/kibana-4.3.0-linux-x64.tar.gz
-tar xvf kibana-*.tar.gz
-cd kibana-4.3.0-linux-x64
-
-/bin/mkdir -p /opt/kibana
+/bin/tar xvf kibana-*.tar.gz && /bin/cp -R kibana-4.3.0-linux-x64/* /opt/kibana/
 /bin/cp -R kibana-4.3.0-linux-x64/* /opt/kibana/
 /bin/chown -R kibana: /opt/kibana
 

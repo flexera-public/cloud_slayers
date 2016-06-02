@@ -1,8 +1,14 @@
 #! /usr/bin/sudo /bin/bash
+# ---
+# RightScript Name: Install Logstash
+# Description: Installs Logstash and configures it for CloudSlayers use
+# Inputs: {}
+# Attachments: []
+# ...
 
 /bin/echo 'deb http://packages.elasticsearch.org/logstash/2.1/debian stable main' | /usr/bin/tee /etc/apt/sources.list.d/logstash.list
 /usr/bin/apt-get update
-/usr/bin/apt-get install logstash
+/usr/bin/apt-get -y --force-yes install logstash
 
 cat <<EOF > /etc/logstash/conf.d/10-consumelogs.conf
 input {
@@ -37,7 +43,9 @@ EOF
 
 cat <<EOF > /etc/logstash/conf.d/30-elasticsearch-output.conf
 output {
-  elasticsearch_http { host => localhost }
+  elasticsearch {
+                 hosts => ["localhost"]
+                }
   stdout { codec => rubydebug }
 }
 EOF

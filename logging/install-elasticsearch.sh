@@ -1,9 +1,17 @@
 #! /usr/bin/sudo /bin/bash
+# ---
+# RightScript Name: Install Elasticsearch
+# Description: Installs and configures Elasticsearch for localhost operation
+# Inputs: {}
+# Attachments: []
+# ...
 
 /usr/bin/wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | /usr/bin/apt-key add -
 /bin/echo "deb http://packages.elastic.co/elasticsearch/2.x/debian stable main" | /usr/bin/tee -a /etc/apt/sources.list.d/elasticsearch-2.x.list
 /usr/bin/apt-get update
 /usr/bin/apt-get -y install elasticsearch
+/bin/mkdir -p /log/elasticsearch
+/bin/chown elasticsearch:elasticsearch /log/elasticsearch
 
 echo <<EOF > /etc/elasticsearch/elasticsearch.yml
 path.data: /log/elasticsearch

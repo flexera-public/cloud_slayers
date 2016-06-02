@@ -1,0 +1,16 @@
+Name: ELK-CloudSlayers
+Description: ServerTemplate for Logging for CloudSlayers
+Inputs:
+  NGINX_PASSWD: "blank"
+RightScripts:
+  Boot:
+  - install-java-8.sh
+  - install-rsyslog.sh
+  - install-logstash.sh
+  - install-elasticsearch.sh
+  - install-kibana.sh
+  - install-nginx.sh
+  Operational:
+  Decommission:
+MultiCloudImages:
+- Href: /api/multi_cloud_images/417006004
