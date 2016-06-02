@@ -23,7 +23,6 @@
 /bin/ln -l /log/19 /log/keystone
 /bin/ln -l /log/20 /log/glance
 /bin/ln -l /log/21 /log/cloudplatform
-/bin/ln -l /log/22 /log/
 
 cat <<EOF > /etc/rsyslog.conf
 #  /etc/rsyslog.conf    Configuration file for rsyslog v3.
