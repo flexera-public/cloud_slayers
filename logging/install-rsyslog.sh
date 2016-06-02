@@ -10,6 +10,20 @@
 /usr/bin/apt-get update
 /usr/bin/apt-get -y install rsyslog
 /bin/mkdir -p /log
+/bin/mkdir -p /log/16
+/bin/mkdir -p /log/17
+/bin/mkdir -p /log/18
+/bin/mkdir -p /log/19
+/bin/mkdir -p /log/20
+/bin/mkdir -p /log/21
+/bin/mkdir -p /log/22
+/bin/ln -l /log/16 /log/neutron
+/bin/ln -l /log/17 /log/nova
+/bin/ln -l /log/18 /log/cinder
+/bin/ln -l /log/19 /log/keystone
+/bin/ln -l /log/20 /log/glance
+/bin/ln -l /log/21 /log/cloudplatform
+/bin/ln -l /log/22 /log/
 
 cat <<EOF > /etc/rsyslog.conf
 #  /etc/rsyslog.conf    Configuration file for rsyslog v3.
