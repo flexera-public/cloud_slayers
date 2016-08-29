@@ -1,0 +1,43 @@
+{
+  "variables": {
+        "client_id":"",
+        "client_secret":"",
+        "resource_group_name":"",
+        "storage_account":"",
+        "subscription_id":"",
+        "tenant_id":"",
+        "ssh_username":"",
+        "ssh_password":""
+  },
+  "builders": [
+      {
+      "type": "azure-arm",
+      "client_id": "{{user `client_id`}}",
+      "client_secret": "{{user `client_secret`}}",
+      "resource_group_name": "{{user `resource_group_name`}}",
+      "storage_account": "{{user `storage_account`}}",
+      "subscription_id": "{{user `subscription_id`}}",
+      "tenant_id": "{{user `tenant_id`}}",
+
+      "capture_container_name": "vhds",
+      "os_type": "Linux",
+      "capture_name_prefix": "CI-Ubuntu12.04-save",
+      "image_publisher": "Canonical",
+      "image_offer": "UbuntuServer",
+      "image_sku": "12.04.5-LTS",
+      "location": "West US",
+      "vm_size": "Standard_A2",
+      "ssh_pty": true,
+      "ssh_username": "{{user `ssh_username`}}",
+      "ssh_password": "{{user `ssh_password`}}"
+      }
+
+  ],
+  "provisioners":[{
+      "type": "shell", 
+      "scripts": [ "update.sh", "cloudinit.sh", "rightlink.sh", "cleanup.sh" ],
+      "skip_clean": true
+    }
+  ]
+}
+
