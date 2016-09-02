@@ -1,4 +1,7 @@
 #!/bin/bash -ex
+#Regnerate machine-id on systemd vms
+[[ -e /etc/machine-id ]] && sed -i -e 's/ExecStart.*/& --setup-machine-id/' /usr/lib/systemd/system/systemd-firstboot.service
+
 if `which waagent &> /dev/null`; then
   sudo /usr/sbin/waagent -force -deprovision+user
 else
