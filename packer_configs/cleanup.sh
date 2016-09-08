@@ -1,6 +1,11 @@
 #!/bin/bash -ex
-#Regnerate machine-id on systemd vms
-[[ -e /etc/machine-id ]] && sed -i -e 's/ExecStart.*/& --setup-machine-id/' /usr/lib/systemd/system/systemd-firstboot.service
+#Regenerate machine-id on systemd vms
+function os_core() { grep "Core" /etc/motd &> /dev/null || return 1; }
+if os_core; then
+    sudo cp /usr/lib/systemd/system/systemd-firstboot.service /etc/systemd/system && sudo sed -i -e 's/ExecStart.*/& --setup-machine-id/' /etc/systemd/system/systemd-firstboot.service
+  else
+    [[ -e /etc/machine-id ]] && sudo sed -i -e 's/ExecStart.*/& --setup-machine-id/' /usr/lib/systemd/system/systemd-firstboot.service
+fi
 
 if `which waagent &> /dev/null`; then
   sudo /usr/sbin/waagent -force -deprovision+user
