@@ -1,0 +1,1 @@
+Files are stored in /tmp/idocs/swagger. Change in index_maker if that changes. The aws key, secret and bucket need to be in the env
