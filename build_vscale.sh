@@ -42,6 +42,7 @@ hdparm -z /dev/nbd0
 mount /dev/nbd0p1 /mnt
 mount -t proc proc /mnt/proc
 mount -o bind /dev /mnt/dev
+mount -o bind /dev/pts /mnt/dev/pts
 mount -o bind /sys /mnt/sys
 
 echo "Creating resolv.conf"
@@ -51,12 +52,15 @@ cp /etc/resolv.conf /mnt/etc/resolv.conf
 #read
 
 echo "Updating PATH"
-export PATH=$PATH:/bin:/sbin
+export PATH=$PATH:/bin:/sbin:/usr/sbin
 
 echo "Performing OS update"
 chroot /mnt apt-get update
 chroot /mnt apt-get -y --force-yes dist-upgrade
 chroot /mnt apt-get clean all
+
+# Use the simple grub.cfg
+cp /mnt/boot/grub/grub.cfge /mnt/boot/grub/grub.cfg
 
 echo "Updating appliance.version"
 echo ${application_name} >> /mnt/etc/appliance.version
@@ -95,6 +99,7 @@ rm /mnt/tmp/zero
 
 echo "Unmounting disk"
 umount /mnt/proc
+umount /mnt/dev/pts
 umount /mnt/dev
 umount /mnt/sys
 umount /mnt
