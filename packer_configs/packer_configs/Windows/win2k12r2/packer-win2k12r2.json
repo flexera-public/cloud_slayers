@@ -1,0 +1,35 @@
+{
+  "builders": 
+  [
+      {
+      "type": "azure-arm",
+      "client_id": "1b46c61b-b21e-4243-80fe-e4201a025a72",
+      "client_secret": "sDyL0zx5OsFEsWMw7xGHwEUDPAy155sb",
+      "resource_group_name": "rs-default-westus",
+      "storage_account": "armwestus",
+      "subscription_id": "85b2fd27-1f18-4183-b57d-7296e9151b22",
+      "object_id": "c65a23f8-075f-449b-bfaf-cf931a6f25b5",
+      "capture_container_name": "vhds",
+      "os_type": "Windows",
+      "capture_name_prefix": "CI-Win2012R2-save",
+      "image_publisher": "MicrosoftWindowsServer",
+      "image_offer": "WindowsServer",
+      "image_sku": "2012-R2-Datacenter",
+      "location": "West US",
+      "vm_size": "Standard_A2",
+      "communicator": "winrm",
+      "winrm_use_ssl": "true",
+      "winrm_insecure": "true",
+      "winrm_timeout": "3m",
+      "winrm_username": "packer"
+      }
+    ],
+    "provisioners": [
+        {
+           "type": "powershell",
+	   "execute_command": "powershell -ExecutionPolicy UnRestricted \"& { {{.Vars}}{{.Path}}; exit $LastExitCode}\"",
+           "scripts": [ "./enable_winrm.ps1", "./rightlink.ps1", "./sysprep.ps1" ]
+        }
+    ]
+}
+

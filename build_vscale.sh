@@ -38,6 +38,7 @@ rm ${latest_name}-disk1.vmdk
 
 echo "Mounting base image"
 qemu-nbd -c /dev/nbd0 base.qcow2
+hdparm -z /dev/nbd0
 mount /dev/nbd0p1 /mnt
 mount -t proc proc /mnt/proc
 mount -o bind /dev /mnt/dev
@@ -46,12 +47,11 @@ mount -o bind /sys /mnt/sys
 echo "Creating resolv.conf"
 cp /etc/resolv.conf /mnt/etc/resolv.conf
 
-echo "Pausing so you can run:"
-#echo "chroot /mnt apt-get install apt-transport-https"
-#echo "and make the vmware repo https"
-#echo "...also change the ovf line from vscale 2 to vscale-2"
-echo "Change /etc/logrotate.d/vscale size parameter to minsize"
-read
+#echo "Pausing so you can run:"
+#read
+
+echo "Updating PATH"
+export PATH=$PATH:/bin:/sbin
 
 echo "Performing OS update"
 chroot /mnt apt-get update
@@ -102,10 +102,12 @@ qemu-nbd -d /dev/nbd0
 
 echo "Getting a thin disk"
 qemu-img convert -f qcow2 -O qcow2 base.qcow2 ${appliance_name}-disk1.qcow2
+chattr +C ${appliance_name}-disk1.qcow2
 rm base.qcow2
 
 echo "Stream optimizing vmdk"
 qemu-img convert -f qcow2 -O vmdk -o subformat=streamOptimized ${appliance_name}-disk1.qcow2 ${appliance_name}-disk1.vmdk
+chattr +C ${appliance_name}-disk1.vmdk
 #rm ${appliance_name}-disk1.qcow2
 
 echo "Switching vmdk version"

@@ -1,0 +1,31 @@
+{
+  "builders": [
+      {
+      "type": "azure-arm",
+      "client_id": "1b46c61b-b21e-4243-80fe-e4201a025a72",
+      "client_secret": "sDyL0zx5OsFEsWMw7xGHwEUDPAy155sb",
+      "resource_group_name": "rs-default-westus",
+      "storage_account": "armwestus",
+      "subscription_id": "85b2fd27-1f18-4183-b57d-7296e9151b22",
+      "tenant_id": "09b8fec1-4b8d-48dd-8afa-5c1a775ea0f2",
+
+      "capture_container_name": "vhds",
+      "os_type": "Linux",
+      "capture_name_prefix": "CI-CoreOS-save",
+      "image_publisher": "coreos",
+      "image_offer": "CoreOS",
+      "image_sku": "Stable",
+      "image_version": "899.17.0",
+      "location": "West US",
+      "vm_size": "Standard_A2",
+      "ssh_pty": true,
+      "ssh_username": "packer",
+      "ssh_password": "Right$cale11"
+      }
+
+  ],
+  "provisioners":[{
+      "type": "shell", "scripts": [ "cloudinit.sh", "rightlink.sh", "cleanup-coreos.sh" ]
+  }]
+}
+

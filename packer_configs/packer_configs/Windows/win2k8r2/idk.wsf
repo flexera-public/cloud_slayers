@@ -1,0 +1,51 @@
+<package>
+    <job id="setup">
+        <?job debug="true" ?>
+
+        <runtime>
+            <named name="ConfigurationPass" type="string"
+                helpstring="The configuration pass to apply." />
+        </runtime>
+
+        <object id="FSO" progid="Scripting.FileSystemObject" />
+        <object id="WshShell" progid="WScript.Shell" />
+
+        <script language="VBScript" src="Utility.vbs" />
+
+        <script language="VBScript">
+                const winRmHttpPort = 5985
+                const winRmHttpsPort = 5986
+                const NET_FW_IP_PROTOCOL_TCP = 6
+
+                Dim oResults
+                Dim objOS, objWinRmElement, objOSDParams, objListeners, objListener, objListenerType
+ 
+                Set os = GetScriptObject(WScript, "OperatingSystem.wsf", "OperatingSystem")
+                Set os.Script = WScript
+                os.Initialize
+
+                Set objShell = CreateObject("Wscript.Shell")                
+                objShell.run("powershell -command c:\thumb.ps1")
+
+		WScript.Sleep 10000
+
+		Set file = fso.OpenTextFile("C:\windows\temp\thumb.txt", 1)
+		fingerprint = file.ReadAll
+
+                os.RemoveWinRmListeners
+                os.RemoveHttpSslConfiguration winRmHttpsPort
+
+                os.ConfigureWinRmHttpsListener winRmHttpsPort, fingerprint
+                TraceError g_Trace, "ConfigureWinRm: Could not configure HTTPS listener"
+
+                os.AddFirewallRule "Windows Remote Management (HTTPS-In) (Azure)", "System", NET_FW_IP_PROTOCOL_TCP, winRmHttpsPort, "*", True
+                TraceError g_Trace, "ConfigureWinRm: Could not configure HTTPS listener firewall rule"
+
+                os.ChangeWinRmServiceStartModeAuto
+                TraceError g_Trace, "ConfigureWinRm: ChangeWinRmServiceStartModeAuto failed"
+                os.RestartWinRmService(WScript)
+
+        </script>
+    </job>
+</package>
+
