@@ -3,6 +3,7 @@
 latest=`curl http://rightscale-vscale.s3.amazonaws.com/appliances/latest`
 application_name="vscale_${1}"
 admin_name="vscale-admin_${2}"
+location="${3}"
 appliance_name=`echo ${application_name} | sed s/_/-/g`
 vscale="http://rightscale-vscale.s3.amazonaws.com/vscale/${application_name}.xz"
 vscale_admin="http://rightscale-vscale.s3.amazonaws.com/vscale-admin/${admin_name}.xz"
@@ -21,10 +22,10 @@ if [[ `cat /sys/module/nbd/parameters/max_part` -lt 2 ]]; then
 fi
 
 echo "Creating work folder"
-mkdir /tmp/${application_name}
+mkdir ${location}/${application_name}
 
 echo "Getting latest image"
-cd /tmp/${application_name}
+cd ${location}/${application_name}
 wget $latest
 latest_name=`ls *.ova | sed s/.ova//g`
 
@@ -137,9 +138,6 @@ echo "SHA1(${appliance_name}-disk1.vmdk)=${vmdk_sha1}" >> ${appliance_name}.mf
 echo "Creating ovf"
 tar cvf ${appliance_name}.ova ${appliance_name}.ovf ${appliance_name}.mf ${appliance_name}-disk1.vmdk
 
-echo "Giving ova to Bill"
-mv ${appliance_name}.ova /home/hrich/
-chown hrich:hrich /home/hrich/${appliance_name}.ova 
-
 echo "Cleaning up junk"
-#rm /tmp/${application_name} -R
+cp ${location}/${application_name}/${appliance_name}.ova ~/ 
+#rm ${location}/${application_name} -R
