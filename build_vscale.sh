@@ -59,9 +59,10 @@ echo "Performing OS update"
 chroot /mnt apt-get update
 chroot /mnt apt-get -y --force-yes dist-upgrade
 chroot /mnt apt-get clean all
+grub-install --root-directory=/mnt /dev/nbd0
 
-# Use the simple grub.cfg
-cp /mnt/boot/grub/grub.cfge /mnt/boot/grub/grub.cfg
+# Use the simple grub.cfg - The simple file doesn't exist yet. Make it
+cp /mnt/boot/grub/grub.cfg.simple /mnt/boot/grub/grub.cfg
 
 echo "Updating appliance.version"
 echo ${application_name} >> /mnt/etc/appliance.version
@@ -99,11 +100,7 @@ dd if=/dev/zero of=/mnt/tmp/zero bs=4M
 rm /mnt/tmp/zero
 
 echo "Unmounting disk"
-umount /mnt/proc
-umount /mnt/dev/pts
-umount /mnt/dev
-umount /mnt/sys
-umount /mnt
+umount /mnt -R
 qemu-nbd -d /dev/nbd0
 
 echo "Getting a thin disk"
