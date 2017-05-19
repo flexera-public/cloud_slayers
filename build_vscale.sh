@@ -65,7 +65,7 @@ grub-install --root-directory=/mnt /dev/nbd0
 cp /mnt/boot/grub/grub.cfg.simple /mnt/boot/grub/grub.cfg
 
 echo "Updating appliance.version"
-echo ${application_name} >> /mnt/etc/appliance.version
+echo ${application_name} > /mnt/etc/appliance.version
 
 echo "Downloading latest packages"
 wget ${vscale} -O /mnt/tmp/${application_name}.xz
