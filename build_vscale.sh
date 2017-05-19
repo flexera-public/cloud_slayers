@@ -49,8 +49,8 @@ mount -o bind /sys /mnt/sys
 echo "Creating resolv.conf"
 cp /etc/resolv.conf /mnt/etc/resolv.conf
 
-#echo "Pausing so you can run:"
-#read
+echo "Pausing so you can run: enable logrotate for vscale-admin.log and wstuncli.log"
+read
 
 echo "Updating PATH"
 export PATH=$PATH:/bin:/sbin:/usr/sbin
