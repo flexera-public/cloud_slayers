@@ -86,9 +86,10 @@ chroot /mnt ln -s /home/vscale-admin/${admin_name} /home/vscale-admin/current
 chroot /mnt tar xf /tmp/${admin_name}.xz -C /home/vscale-admin/current
 
 echo "Unpacking and activating applications"
-echo "cd /home/vscale/current && ./unpack.sh && ./activate.sh" > /mnt/tmp/unpack.sh
-echo "cd /home/vscale-admin/current && ./unpack.sh && ./activate.sh" >> /mnt/tmp/unpack.sh
+printf '#!/bin/bash\nsource /etc/profile; cd /home/vscale/current && ./unpack.sh && ./activate.sh' > /mnt/tmp/unpack.sh
 chmod +x /mnt/tmp/unpack.sh
+chroot /mnt /tmp/unpack.sh
+printf '#!/bin/bash\nsource /etc/profile; cd /home/vscale-admin/current && ./unpack.sh && ./activate.sh' > /mnt/tmp/unpack.sh
 chroot /mnt /tmp/unpack.sh
 
 echo "Removing resolv.conf"
