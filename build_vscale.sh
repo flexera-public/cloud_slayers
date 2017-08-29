@@ -4,7 +4,7 @@ latest=`curl http://rightscale-vscale.s3.amazonaws.com/appliances/latest`
 application_name="vscale_${1}"
 admin_name="vscale-admin_${2}"
 location="${3}"
-appliance_name=`echo ${application_name} | sed s/_/-/g`
+appliance_name="vscale_${4}"
 vscale="http://rightscale-vscale.s3.amazonaws.com/vscale/${application_name}.xz"
 vscale_admin="http://rightscale-vscale.s3.amazonaws.com/vscale-admin/${admin_name}.xz"
 
