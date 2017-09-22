@@ -27,11 +27,12 @@ mkdir ${location}/${application_name}
 echo "Getting latest image"
 cd ${location}/${application_name}
 wget $latest
-latest_name=`ls *.ova | sed s/.ova//g`
+latest_name1=`ls *.ova | sed s/.ova//g`
+latest_name=`ls *.ova | sed s/.ova//g | sed s/-/_/g`
 
 echo "Untaring ova"
-tar xf ${latest_name}.ova
-rm ${latest_name}.ova
+tar xf ${latest_name1}.ova
+rm ${latest_name1}.ova
 
 echo "Converting image to qcow2"
 qemu-img convert -f vmdk -O qcow2 ${latest_name}-disk1.vmdk base.qcow2
